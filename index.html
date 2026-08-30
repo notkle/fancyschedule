@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fancy Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B2320;
+    --paper:#FBF8F5;
+    --paper-dim:#F1ECE6;
+    --line:#E4DCD3;
+    --berry:#A6314B;
+    --berry-dim:#F3E1E6;
+    --muted:#8A7F76;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html, body{
+    height:100%;
+  }
+  body{
+    margin:0;
+    background:var(--paper-dim);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    padding:14px;
+  }
+  .app-shell{
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    background:var(--paper);
+    border-radius:18px;
+    border:1px solid var(--line);
+    box-shadow:0 4px 20px rgba(43,35,32,0.05);
+    overflow:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  button{
+    font-family:inherit;
+    cursor:pointer;
+  }
+  /* ---------- Header ---------- */
+  .app-header{
+    padding:18px 16px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--paper);
+    flex:0 0 auto;
+  }
+  .brand-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .brand{
+    font-size:22px;
+    color:var(--ink);
+  }
+  .brand .accent{ color:var(--berry); }
+  .icon-btn{
+    background:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:10px;
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    color:var(--ink);
+  }
+  .icon-btn:active{ background:var(--line); }
+  .week-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .week-nav{ display:flex; align-items:center; gap:8px; }
+  .week-label{ font-size:14px; color:var(--muted); min-width:150px; text-align:center; }
+  .controls-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+  }
+  .tech-filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .tech-filter-btn{
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:20px;
+    padding:7px 14px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .tech-filter-btn .dot{
+    width:9px; height:9px; border-radius:50%; flex-shrink:0;
+  }
+  .tech-filter-btn.active{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:#fff;
+  }
+  .tech-filter-btn.active .dot{
+    box-shadow:0 0 0 2px rgba(255,255,255,0.5);
+  }
+  .spacer{ flex:1; }
+  .add-btn{
+    background:var(--berry);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    width:38px;
+    height:38px;
+    font-size:20px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 6px rgba(166,49,75,0.3);
+  }
+  .add-btn:active{ transform:scale(0.95); }
+
+  /* ---------- Schedule grid ---------- */
+  .schedule-wrap{
+    display:flex;
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+  }
+  .time-gutter{
+    flex:0 0 52px;
+    padding-top:46px;
+    display:flex;
+    flex-direction:column;
+    min-height:420px;
+  }
+  .time-label{
+    flex:1;
+    font-size:11px;
+    color:var(--muted);
+    text-align:right;
+    padding-right:8px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:flex-end;
+    transform:translateY(-6px);
+  }
+  .days-scroll{
+    flex:1;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    min-height:0;
+  }
+  .days-inner{
+    display:grid;
+    grid-template-columns:repeat(7, minmax(112px, 1fr));
+    width:100%;
+    height:100%;
+  }
+  .day-col{
+    min-width:0;
+    border-left:1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+  }
+  .day-col:last-child{ border-right:1px solid var(--line); }
+  .day-head{
+    height:46px;
+    flex:0 0 46px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    border-bottom:1px solid var(--line);
+    background:var(--paper);
+  }
+  .day-head .dname{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted); }
+  .day-head .dnum{ font-size:16px; font-weight:600; font-family:'Fraunces',serif; }
+  .day-head.is-today .dnum{ color:var(--berry); }
+  .day-body{
+    position:relative;
+    flex:1;
+    min-height:374px;
+  }
+  .lanes{
+    position:absolute;
+    inset:0;
+    display:flex;
+  }
+  .lane{
+    position:relative;
+    flex:1;
+    border-right:1px dashed rgba(0,0,0,0.05);
+  }
+  .lane:last-child{ border-right:none; }
+
+  .appt-block{
+    position:absolute;
+    left:2px; right:2px;
+    min-height:22px;
+    border-radius:8px;
+    padding:4px 6px;
+    font-size:11px;
+    color:#fff;
+    overflow:hidden;
+    line-height:1.25;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  }
+  .appt-block b{ display:block; font-size:11px; font-weight:700;}
+  .free-block{
+    position:absolute;
+    left:2px; right:2px;
+    border-radius:8px;
+    border:2px solid;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:700;
+    opacity:0.85;
+  }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(43,35,32,0.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .overlay.show{ display:flex; }
+  .sheet{
+    background:var(--paper);
+    width:100%;
+    max-width:420px;
+    border-radius:20px;
+    padding:20px 20px 28px;
+    max-height:85vh;
+    overflow-y:auto;
+    animation:popin 0.18s ease-out;
+  }
+  @keyframes popin{ from{transform:scale(0.96); opacity:0;} to{transform:scale(1); opacity:1;} }
+  .sheet h2{ margin:0 0 4px; font-size:19px; }
+  .sheet .sub{ color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+  .field input, .field select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:15px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--ink);
+  }
+  .row-2{ display:flex; gap:10px; }
+  .row-2 > *{ flex:1; }
+  .tech-choice-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tech-choice{
+    border:2px solid var(--line);
+    background:#fff;
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:14px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1 1 45%;
+  }
+  .tech-choice .dot{ width:10px; height:10px; border-radius:50%; }
+  .tech-choice.selected{ border-color:var(--berry); background:var(--berry-dim); }
+  .tech-choice:disabled{
+    opacity:0.45;
+    cursor:not-allowed;
+    background:var(--paper-dim);
+  }
+  .swatch{ width:12px; height:12px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .btn-row{ display:flex; gap:10px; margin-top:18px; }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:12px;
+    padding:13px;
+    font-size:14px;
+    font-weight:700;
+    font-family:inherit;
+  }
+  .btn-primary{ background:var(--berry); color:#fff; }
+  .btn-ghost{ background:var(--paper-dim); color:var(--ink); border:1px solid var(--line); }
+  .btn-danger{ background:#fff; color:#B33951; border:1px solid #E9C6CE; }
+  .step-dots{ display:flex; gap:6px; justify-content:center; margin-bottom:16px; }
+  .step-dots span{ width:6px; height:6px; border-radius:50%; background:var(--line); }
+  .step-dots span.active{ background:var(--berry); width:18px; border-radius:3px; }
+
+  .tech-manage-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0; border-bottom:1px solid var(--line);
+  }
+  .tech-manage-row .name{ flex:1; font-weight:600; font-size:14px; }
+  .remove-x{ background:none; border:none; color:var(--muted); font-size:18px; }
+
+  .empty-note{ font-size:12px; color:var(--muted); margin-top:10px; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="app-header">
+    <div class="brand-row">
+      <div class="brand display">Fancy<span class="accent">·</span>Schedule</div>
+      <button class="icon-btn" id="optionsBtn" title="Options">⚙</button>
+    </div>
+
+    <div class="week-row">
+      <div class="week-nav">
+        <button class="icon-btn" id="prevWeek">‹</button>
+        <button class="icon-btn" id="todayBtn" style="width:auto;padding:0 10px;font-size:12px;">Today</button>
+        <button class="icon-btn" id="nextWeek">›</button>
+      </div>
+      <div class="week-label" id="weekLabel"></div>
+      <button class="add-btn" id="addBtn">+</button>
+    </div>
+
+    <div class="controls-row">
+      <div class="tech-filter-row" id="techFilter"></div>
+    </div>
+  </div>
+
+  <div class="schedule-wrap">
+    <div class="time-gutter" id="timeGutter"></div>
+    <div class="days-scroll">
+      <div class="days-inner" id="daysInner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Appointment wizard / detail modal -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+/* ===================== State ===================== */
+const PALETTE = ['#C96A4E','#4F8F8B','#C79A3C','#7C74B8','#6E9469','#B3546F'];
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function isoDate(d){ return startOfDay(d).toISOString().slice(0,10); }
+function fmtDayName(d){ return d.toLocaleDateString(undefined,{weekday:'short'}); }
+function fmtMonthShort(d){ return d.toLocaleDateString(undefined,{month:'short'}); }
+
+const state = {
+  weekStart: startOfDay(new Date()),
+  technicians: [
+    {id:uid(), name:'Tammy', color:PALETTE[0]},
+    {id:uid(), name:'Rosa', color:PALETTE[1]},
+    {id:uid(), name:'Kim', color:PALETTE[2]},
+  ],
+  appointments: [],
+  filterTech: 'all',
+};
+
+// seed a few demo appointments across the visible week
+(function seed(){
+  const t = state.technicians;
+  const mk = (dayOffset, hour, min, dur, techIdx, name, phone) => ({
+    id: uid(),
+    date: isoDate(addDays(state.weekStart, dayOffset)),
+    start: hour*60+min,
+    duration: dur,
+    techId: t[techIdx].id,
+    clientName: name,
+    phone: phone
+  });
+  state.appointments.push(
+    mk(0, 10, 0, 60, 0, 'Jamie Ortiz', '555-0142'),
+    mk(0, 13, 30, 90, 1, 'Priya N.', '555-0198'),
+    mk(1, 11, 0, 30, 2, 'Devon R.', '555-0110'),
+    mk(2, 9, 30, 60, 0, 'Ana Cruz', '555-0177'),
+    mk(2, 15, 0, 45, 1, 'Grace L.', '555-0133'),
+    mk(4, 12, 0, 60, 2, 'Michael B.', '555-0121'),
+  );
+})();
+
+const DAY_START_HOUR = 9;
+const DAY_END_HOUR = 20;
+const TOTAL_MIN = (DAY_END_HOUR - DAY_START_HOUR) * 60;
+const HOUR_PCT = 100 / (DAY_END_HOUR - DAY_START_HOUR);
+const DAY_BODY_BG = `repeating-linear-gradient(to bottom, transparent, transparent calc(${HOUR_PCT}% - 1px), var(--line) calc(${HOUR_PCT}% - 1px), var(--line) ${HOUR_PCT}%)`;
+
+/* ===================== Rendering ===================== */
+function initials(name){
+  return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+}
+function techById(id){ return state.technicians.find(t=>t.id===id); }
+
+function renderAll(){
+  renderWeekLabel();
+  renderTechFilter();
+  renderTimeGutter();
+  renderDays();
+}
+
+function renderWeekLabel(){
+  const end = addDays(state.weekStart,6);
+  const label = `${fmtMonthShort(state.weekStart)} ${state.weekStart.getDate()} – ${fmtMonthShort(end)} ${end.getDate()}`;
+  document.getElementById('weekLabel').textContent = label;
+}
+
+function renderTechFilter(){
+  const wrap = document.getElementById('techFilter');
+  const allBtn = `<button class="tech-filter-btn ${state.filterTech==='all'?'active':''}" data-id="all">All</button>`;
+  const techBtns = state.technicians.map(t=>`
+    <button class="tech-filter-btn ${state.filterTech===t.id?'active':''}" data-id="${t.id}">
+      <span class="dot" style="background:${t.color}"></span>${t.name}
+    </button>`).join('');
+  wrap.innerHTML = allBtn + techBtns;
+  wrap.querySelectorAll('.tech-filter-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.filterTech = btn.dataset.id;
+      renderAll();
+    });
+  });
+}
+
+function renderTimeGutter(){
+  const gutter = document.getElementById('timeGutter');
+  let html = '';
+  for(let h=DAY_START_HOUR; h<DAY_END_HOUR; h++){
+    const label = h===12 ? '12 PM' : (h>12 ? (h-12)+' PM' : h+' AM');
+    html += `<div class="time-label">${label}</div>`;
+  }
+  gutter.innerHTML = html;
+}
+
+function overlapsRange(s1,d1,s2,d2){ return s1 < s2+d2 && s1+d1 > s2; }
+function hasConflict(techId, date, start, duration, excludeId){
+  return state.appointments.some(a=>
+    a.id!==excludeId && a.techId===techId && a.date===date &&
+    overlapsRange(a.start, a.duration, start, duration)
+  );
+}
+
+function overlaps(apptStart, apptDur, hour){
+  const hs = hour*60, he=(hour+1)*60;
+  const as = apptStart, ae = apptStart+apptDur;
+  return as < he && ae > hs;
+}
+
+function renderDays(){
+  const inner = document.getElementById('daysInner');
+  const activeTechs = state.filterTech==='all' ? state.technicians : state.technicians.filter(t=>t.id===state.filterTech);
+  const today = isoDate(new Date());
+
+  let html = '';
+  for(let i=0;i<7;i++){
+    const day = addDays(state.weekStart, i);
+    const dISO = isoDate(day);
+    const isToday = dISO===today;
+
+    let laneHtml = '';
+    activeTechs.forEach(tech=>{
+      let blocksHtml = '';
+      const dayAppts = state.appointments.filter(a=>a.date===dISO && a.techId===tech.id);
+
+      dayAppts.forEach(a=>{
+        const top = (a.start - DAY_START_HOUR*60)/TOTAL_MIN*100;
+        const h = a.duration/TOTAL_MIN*100;
+        blocksHtml += `<div class="appt-block" style="top:${top}%;height:${h}%;background:${tech.color};" data-appt="${a.id}">
+            <b>${initials(tech.name)}</b>${a.clientName}
+          </div>`;
+      });
+      laneHtml += `<div class="lane" data-tech="${tech.id}" data-date="${dISO}">${blocksHtml}</div>`;
+    });
+
+    html += `<div class="day-col">
+        <div class="day-head ${isToday?'is-today':''}">
+          <div class="dname">${fmtDayName(day)}</div>
+          <div class="dnum">${day.getDate()}</div>
+        </div>
+        <div class="day-body" style="background-image:${DAY_BODY_BG};">
+          <div class="lanes">${laneHtml}</div>
+        </div>
+      </div>`;
+  }
+  inner.innerHTML = html;
+
+  // click handlers for existing appointments
+  inner.querySelectorAll('.appt-block').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const appt = state.appointments.find(a=>a.id===el.dataset.appt);
+      openDetailSheet(appt);
+    });
+  });
+  // click on empty lane space -> quick create at that time (nice-to-have, approximate hour)
+  inner.querySelectorAll('.lane').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target !== el) return; // only empty space clicks
+      const rect = el.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const pct = y / rect.height;
+      const hour = DAY_START_HOUR + Math.floor(pct * (DAY_END_HOUR - DAY_START_HOUR));
+      openWizard({presetDate: el.dataset.date, presetHour: hour, presetTech: el.dataset.tech});
+    });
+  });
+}
+
+/* ===================== Wizard (create) ===================== */
+let wizardState = {};
+
+function openWizard(preset={}){
+  wizardState = {
+    step:1,
+    date: preset.presetDate || isoDate(state.weekStart),
+    time: preset.presetHour!=null ? String(preset.presetHour).padStart(2,'0')+':00' : '10:00',
+    duration: 60,
+    techId: preset.presetTech || (state.technicians[0] && state.technicians[0].id) || '',
+    clientName:'',
+    phone:''
+  };
+  renderWizardStep();
+  showOverlay();
+}
+
+function renderWizardStep(){
+  const sheet = document.getElementById('sheet');
+  const dots = [1,2,3].map(n=>`<span class="${wizardState.step===n?'active':''}"></span>`).join('');
+
+  if(wizardState.step===1){
+    sheet.innerHTML = `
+      <div class="step-dots">${dots}</div>
+      <h2>New appointment</h2>
+      <div class="sub">Pick a date and time</div>
+      <div class="field"><label>Date</label><input type="date" id="wDate" value="${wizardState.date}"></div>
+      <div class="row-2">
+        <div class="field"><label>Time</label><input type="time" id="wTime" value="${wizardState.time}"></div>
+        <div class="field"><label>Duration</label>
+          <select id="wDuration">
+            <option value="30" ${wizardState.duration==30?'selected':''}>30 min</option>
+            <option value="60" ${wizardState.duration==60?'selected':''}>60 min</option>
+            <option value="90" ${wizardState.duration==90?'selected':''}>90 min</option>
+            <option value="120" ${wizardState.duration==120?'selected':''}>2 hours</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="wCancel">Cancel</button>
+        <button class="btn btn-primary" id="wNext">Next</button>
+      </div>`;
+    document.getElementById('wCancel').onclick = closeOverlay;
+    document.getElementById('wNext').onclick = ()=>{
+      wizardState.date = document.getElementById('wDate').value;
+      wizardState.time = document.getElementById('wTime').value;
+      wizardState.duration = parseInt(document.getElementById('wDuration').value,10);
+      wizardState.step = 2;
+      renderWizardStep();
+    };
+  }
+  else if(wizardState.step===2){
+    if(state.technicians.length===0){
+      sheet.innerHTML = `<h2>New appointment</h2><div class="sub">No technicians yet</div>
+        <p style="font-size:14px;color:var(--muted)">Add a technician in Options first.</p>
+        <div class="btn-row"><button class="btn btn-ghost" id="wBack">Back</button></div>`;
+      document.getElementById('wBack').onclick = ()=>{wizardState.step=1; renderWizardStep();};
+      return;
+    }
+    const [hh,mm] = wizardState.time.split(':').map(Number);
+    const startMin = hh*60+mm;
+    const availability = state.technicians.map(t=>({
+      tech:t,
+      conflict: hasConflict(t.id, wizardState.date, startMin, wizardState.duration, null)
+    }));
+    if(wizardState.techId){
+      const current = availability.find(x=>x.tech.id===wizardState.techId);
+      if(current && current.conflict) wizardState.techId = '';
+    }
+    const anyAvailable = availability.some(x=>!x.conflict);
+    sheet.innerHTML = `
+      <div class="step-dots">${dots}</div>
+      <h2>New appointment</h2>
+      <div class="sub">Choose a technician</div>
+      <div class="tech-choice-list">
+        ${availability.map(({tech:t,conflict})=>`
+          <button class="tech-choice ${wizardState.techId===t.id?'selected':''}" data-id="${t.id}" ${conflict?'disabled':''}>
+            <span class="dot" style="background:${t.color}"></span>${t.name}${conflict?' <span style="font-weight:400;font-size:11px;color:var(--muted)">— booked</span>':''}
+          </button>`).join('')}
+      </div>
+      ${anyAvailable ? '' : `<div class="empty-note">Everyone is booked at this time — go back and pick a different time.</div>`}
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="wBack">Back</button>
+        <button class="btn btn-primary" id="wNext">Next</button>
+      </div>`;
+    sheet.querySelectorAll('.tech-choice:not([disabled])').forEach(b=>{
+      b.onclick = ()=>{ wizardState.techId=b.dataset.id; renderWizardStep(); };
+    });
+    document.getElementById('wBack').onclick = ()=>{wizardState.step=1; renderWizardStep();};
+    document.getElementById('wNext').onclick = ()=>{
+      if(!wizardState.techId) return;
+      wizardState.step=3; renderWizardStep();
+    };
+  }
+  else if(wizardState.step===3){
+    sheet.innerHTML = `
+      <div class="step-dots">${dots}</div>
+      <h2>New appointment</h2>
+      <div class="sub">Client details</div>
+      <div class="field"><label>Client name</label><input type="text" id="wName" placeholder="Full name" value="${wizardState.clientName}"></div>
+      <div class="field"><label>Phone number</label><input type="tel" id="wPhone" placeholder="(555) 555-5555" value="${wizardState.phone}"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="wBack">Back</button>
+        <button class="btn btn-primary" id="wSave">Save appointment</button>
+      </div>`;
+    document.getElementById('wBack').onclick = ()=>{wizardState.step=2; renderWizardStep();};
+    document.getElementById('wSave').onclick = ()=>{
+      const name = document.getElementById('wName').value.trim();
+      const phone = document.getElementById('wPhone').value.trim();
+      if(!name){ document.getElementById('wName').focus(); return; }
+      const [hh,mm] = wizardState.time.split(':').map(Number);
+      state.appointments.push({
+        id: uid(),
+        date: wizardState.date,
+        start: hh*60+mm,
+        duration: wizardState.duration,
+        techId: wizardState.techId,
+        clientName: name,
+        phone: phone
+      });
+      closeOverlay();
+      renderAll();
+    };
+  }
+}
+
+/* ===================== Detail / edit sheet ===================== */
+function openDetailSheet(appt){
+  const sheet = document.getElementById('sheet');
+  const tech = techById(appt.techId);
+  const [h,m] = [Math.floor(appt.start/60), appt.start%60];
+  const timeStr = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+
+  sheet.innerHTML = `
+    <h2>Appointment</h2>
+    <div class="sub">Edit details or cancel this booking</div>
+    <div class="field"><label>Date</label><input type="date" id="eDate" value="${appt.date}"></div>
+    <div class="row-2">
+      <div class="field"><label>Time</label><input type="time" id="eTime" value="${timeStr}"></div>
+      <div class="field"><label>Duration</label>
+        <select id="eDuration">
+          <option value="30" ${appt.duration==30?'selected':''}>30 min</option>
+          <option value="60" ${appt.duration==60?'selected':''}>60 min</option>
+          <option value="90" ${appt.duration==90?'selected':''}>90 min</option>
+          <option value="120" ${appt.duration==120?'selected':''}>2 hours</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Technician</label>
+      <select id="eTech">${state.technicians.map(t=>{
+        const conflict = hasConflict(t.id, appt.date, appt.start, appt.duration, appt.id);
+        return `<option value="${t.id}" ${t.id===appt.techId?'selected':''} ${conflict?'disabled':''}>${t.name}${conflict?' — booked':''}</option>`;
+      }).join('')}</select>
+    </div>
+    <div class="field"><label>Client name</label><input type="text" id="eName" value="${appt.clientName}"></div>
+    <div class="field"><label>Phone number</label><input type="tel" id="ePhone" value="${appt.phone||''}"></div>
+    <div class="btn-row">
+      <button class="btn btn-danger" id="eDelete">Delete</button>
+      <button class="btn btn-primary" id="eSave">Save changes</button>
+    </div>`;
+
+  document.getElementById('eDelete').onclick = ()=>{
+    state.appointments = state.appointments.filter(a=>a.id!==appt.id);
+    closeOverlay(); renderAll();
+  };
+  document.getElementById('eSave').onclick = ()=>{
+    const [hh,mm] = document.getElementById('eTime').value.split(':').map(Number);
+    appt.date = document.getElementById('eDate').value;
+    appt.start = hh*60+mm;
+    appt.duration = parseInt(document.getElementById('eDuration').value,10);
+    appt.techId = document.getElementById('eTech').value;
+    appt.clientName = document.getElementById('eName').value.trim() || appt.clientName;
+    appt.phone = document.getElementById('ePhone').value.trim();
+    closeOverlay(); renderAll();
+  };
+  showOverlay();
+}
+
+/* ===================== Options sheet ===================== */
+function openOptionsSheet(){
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = `
+    <h2>Technicians</h2>
+    <div class="sub">Manage who appears on the schedule</div>
+    <div id="techList"></div>
+    <div class="field" style="margin-top:14px;">
+      <label>Add technician</label>
+      <div class="row-2">
+        <input type="text" id="newTechName" placeholder="Name">
+        <button class="btn btn-primary" id="addTechBtn" style="flex:0 0 90px;">Add</button>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-ghost" id="oClose">Done</button></div>
+  `;
+  renderTechList();
+  document.getElementById('addTechBtn').onclick = ()=>{
+    const input = document.getElementById('newTechName');
+    const name = input.value.trim();
+    if(!name) return;
+    const color = PALETTE[state.technicians.length % PALETTE.length];
+    state.technicians.push({id:uid(), name, color});
+    input.value='';
+    renderTechList();
+    renderAll();
+  };
+  document.getElementById('oClose').onclick = ()=>{ closeOverlay(); renderAll(); };
+  showOverlay();
+}
+function renderTechList(){
+  const list = document.getElementById('techList');
+  if(state.technicians.length===0){
+    list.innerHTML = `<div class="empty-note">No technicians yet — add one below.</div>`;
+    return;
+  }
+  list.innerHTML = state.technicians.map(t=>`
+    <div class="tech-manage-row">
+      <span class="swatch" style="background:${t.color}"></span>
+      <span class="name">${t.name}</span>
+      <button class="remove-x" data-id="${t.id}">×</button>
+    </div>`).join('');
+  list.querySelectorAll('.remove-x').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.dataset.id;
+      state.technicians = state.technicians.filter(t=>t.id!==id);
+      state.appointments = state.appointments.filter(a=>a.techId!==id);
+      if(state.filterTech===id) state.filterTech='all';
+      renderTechList();
+    };
+  });
+}
+
+/* ===================== Overlay helpers ===================== */
+function showOverlay(){ document.getElementById('overlay').classList.add('show'); }
+function closeOverlay(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id==='overlay') closeOverlay();
+});
+
+/* ===================== Top-level controls ===================== */
+document.getElementById('addBtn').onclick = ()=>openWizard();
+document.getElementById('optionsBtn').onclick = openOptionsSheet;
+document.getElementById('prevWeek').onclick = ()=>{ state.weekStart = addDays(state.weekStart,-7); renderAll(); };
+document.getElementById('nextWeek').onclick = ()=>{ state.weekStart = addDays(state.weekStart,7); renderAll(); };
+document.getElementById('todayBtn').onclick = ()=>{ state.weekStart = startOfDay(new Date()); renderAll(); };
+renderAll();
+</script>
+</body>
+</html>
