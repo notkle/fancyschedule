@@ -216,6 +216,8 @@
     flex:1;
     min-height:374px;
   }
+  .day-col.is-sunday .day-head{ background:var(--paper-dim); }
+  .day-col.is-sunday .day-body{ background-color:rgba(43,35,32,0.035); }
   .lanes{
     position:absolute;
     inset:0;
@@ -497,6 +499,7 @@ function renderDays(){
     const day = addDays(state.weekStart, i);
     const dISO = isoDate(day);
     const isToday = dISO===today;
+    const isSunday = day.getDay()===0;
 
     let laneHtml = '';
     activeTechs.forEach(tech=>{
@@ -513,7 +516,7 @@ function renderDays(){
       laneHtml += `<div class="lane" data-tech="${tech.id}" data-date="${dISO}">${blocksHtml}</div>`;
     });
 
-    html += `<div class="day-col">
+    html += `<div class="day-col ${isSunday?'is-sunday':''}">
         <div class="day-head ${isToday?'is-today':''}">
           <div class="dname">${fmtDayName(day)}</div>
           <div class="dnum">${day.getDate()}</div>
@@ -552,7 +555,7 @@ function openWizard(preset={}){
   wizardState = {
     step:1,
     date: preset.presetDate || isoDate(state.weekStart),
-    time: preset.presetHour!=null ? String(preset.presetHour).padStart(2,'0')+':00' : '10:00',
+    time: preset.presetHour!=null ? String(preset.presetHour).padStart(2,'0')+':00' : '09:00',
     duration: 60,
     techId: preset.presetTech || (state.technicians[0] && state.technicians[0].id) || '',
     clientName:'',
@@ -569,8 +572,6 @@ function renderWizardStep(){
   if(wizardState.step===1){
     sheet.innerHTML = `
       <div class="step-dots">${dots}</div>
-      <h2>New appointment</h2>
-      <div class="sub">Pick a date and time</div>
       <div class="field"><label>Date</label><input type="date" id="wDate" value="${wizardState.date}"></div>
       <div class="row-2">
         <div class="field"><label>Time</label><input type="time" id="wTime" value="${wizardState.time}"></div>
@@ -598,7 +599,7 @@ function renderWizardStep(){
   }
   else if(wizardState.step===2){
     if(state.technicians.length===0){
-      sheet.innerHTML = `<h2>New appointment</h2><div class="sub">No technicians yet</div>
+      sheet.innerHTML = `<div class="sub">No technicians yet</div>
         <p style="font-size:14px;color:var(--muted)">Add a technician in Options first.</p>
         <div class="btn-row"><button class="btn btn-ghost" id="wBack">Back</button></div>`;
       document.getElementById('wBack').onclick = ()=>{wizardState.step=1; renderWizardStep();};
@@ -617,8 +618,6 @@ function renderWizardStep(){
     const anyAvailable = availability.some(x=>!x.conflict);
     sheet.innerHTML = `
       <div class="step-dots">${dots}</div>
-      <h2>New appointment</h2>
-      <div class="sub">Choose a technician</div>
       <div class="tech-choice-list">
         ${availability.map(({tech:t,conflict})=>`
           <button class="tech-choice ${wizardState.techId===t.id?'selected':''}" data-id="${t.id}" ${conflict?'disabled':''}>
@@ -642,8 +641,6 @@ function renderWizardStep(){
   else if(wizardState.step===3){
     sheet.innerHTML = `
       <div class="step-dots">${dots}</div>
-      <h2>New appointment</h2>
-      <div class="sub">Client details</div>
       <div class="field"><label>Client name</label><input type="text" id="wName" placeholder="Full name" value="${wizardState.clientName}"></div>
       <div class="field"><label>Phone number</label><input type="tel" id="wPhone" placeholder="(555) 555-5555" value="${wizardState.phone}"></div>
       <div class="btn-row">
@@ -679,8 +676,6 @@ function openDetailSheet(appt){
   const timeStr = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
 
   sheet.innerHTML = `
-    <h2>Appointment</h2>
-    <div class="sub">Edit details or cancel this booking</div>
     <div class="field"><label>Date</label><input type="date" id="eDate" value="${appt.date}"></div>
     <div class="row-2">
       <div class="field"><label>Time</label><input type="time" id="eTime" value="${timeStr}"></div>
@@ -727,8 +722,6 @@ function openDetailSheet(appt){
 function openOptionsSheet(){
   const sheet = document.getElementById('sheet');
   sheet.innerHTML = `
-    <h2>Technicians</h2>
-    <div class="sub">Manage who appears on the schedule</div>
     <div id="techList"></div>
     <div class="field" style="margin-top:14px;">
       <label>Add technician</label>
