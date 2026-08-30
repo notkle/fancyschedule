@@ -246,7 +246,8 @@
   .appt-name{
     white-space:normal;
     overflow-wrap:break-word;
-    word-break:break-word;
+    -webkit-hyphens:auto;
+    -ms-hyphens:auto;
     hyphens:auto;
     line-height:1.2;
   }
@@ -426,10 +427,10 @@ const state = {
   });
   state.appointments.push(
     mk(0, 10, 0, 60, 0, 'Jamie Ortiz', '555-0142'),
-    mk(0, 13, 30, 90, 1, 'Priya N.', '555-0198'),
-    mk(1, 11, 0, 30, 2, 'Devon R.', '555-0110'),
+    mk(0, 13, 30, 60, 1, 'Priya N.', '555-0198'),
+    mk(1, 11, 0, 60, 2, 'Devon R.', '555-0110'),
     mk(2, 9, 30, 60, 0, 'Ana Cruz', '555-0177'),
-    mk(2, 15, 0, 45, 1, 'Grace L.', '555-0133'),
+    mk(2, 15, 0, 60, 1, 'Grace L.', '555-0133'),
     mk(4, 12, 0, 60, 2, 'Michael B.', '555-0121'),
   );
 })();
