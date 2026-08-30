@@ -243,6 +243,16 @@
     box-shadow:0 1px 3px rgba(0,0,0,0.15);
   }
   .appt-block b{ display:block; font-size:11px; font-weight:700;}
+  .appt-name-wrap{ overflow:hidden; white-space:nowrap; }
+  .appt-name{ display:inline-block; white-space:nowrap; will-change:transform; }
+  .appt-name-wrap.marquee .appt-name{
+    animation:marquee-pingpong 4.5s ease-in-out infinite;
+  }
+  @keyframes marquee-pingpong{
+    0%, 12%{ transform:translateX(0); }
+    50%, 62%{ transform:translateX(var(--scroll-dist, 0px)); }
+    100%{ transform:translateX(0); }
+  }
   .free-block{
     position:absolute;
     left:2px; right:2px;
@@ -397,6 +407,9 @@ const state = {
     {id:uid(), name:'Tracy', color:PALETTE[0]},
     {id:uid(), name:'Tyler', color:PALETTE[1]},
     {id:uid(), name:'Chau', color:PALETTE[2]},
+    {id:uid(), name:'Priya', color:PALETTE[3]},
+    {id:uid(), name:'Marco', color:PALETTE[4]},
+    {id:uid(), name:'Wendy', color:PALETTE[5]},
   ],
   appointments: [],
   filterTech: 'all',
@@ -510,7 +523,8 @@ function renderDays(){
         const top = (a.start - DAY_START_HOUR*60)/TOTAL_MIN*100;
         const h = a.duration/TOTAL_MIN*100;
         blocksHtml += `<div class="appt-block" style="top:${top}%;height:${h}%;background:${tech.color};" data-appt="${a.id}">
-            <b>${initials(tech.name)}</b>${a.clientName}
+            <b>${initials(tech.name)}</b>
+            <div class="appt-name-wrap"><span class="appt-name">${a.clientName}</span></div>
           </div>`;
       });
       laneHtml += `<div class="lane" data-tech="${tech.id}" data-date="${dISO}">${blocksHtml}</div>`;
@@ -527,6 +541,7 @@ function renderDays(){
       </div>`;
   }
   inner.innerHTML = html;
+  applyMarquee();
 
   // click handlers for existing appointments
   inner.querySelectorAll('.appt-block').forEach(el=>{
@@ -545,6 +560,17 @@ function renderDays(){
       const hour = DAY_START_HOUR + Math.floor(pct * (DAY_END_HOUR - DAY_START_HOUR));
       openWizard({presetDate: el.dataset.date, presetHour: hour, presetTech: el.dataset.tech});
     });
+  });
+}
+
+function applyMarquee(){
+  document.querySelectorAll('.appt-name-wrap').forEach(wrap=>{
+    const nameEl = wrap.querySelector('.appt-name');
+    const overflowAmt = nameEl.scrollWidth - wrap.clientWidth;
+    if(overflowAmt > 2){
+      wrap.classList.add('marquee');
+      nameEl.style.setProperty('--scroll-dist', (-overflowAmt - 4) + 'px');
+    }
   });
 }
 
