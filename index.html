@@ -110,27 +110,29 @@
     gap:8px;
   }
   .tech-filter-btn{
-    border:1.5px solid var(--line);
-    background:#fff;
+    border:none;
     border-radius:20px;
     padding:7px 14px;
     font-size:13px;
     font-weight:600;
-    color:var(--ink);
+    color:#fff;
     display:flex;
     align-items:center;
     gap:6px;
   }
-  .tech-filter-btn .dot{
-    width:9px; height:9px; border-radius:50%; flex-shrink:0;
-  }
   .tech-filter-btn.active{
+    box-shadow:0 0 0 2px var(--ink);
+  }
+  .all-btn{
+    border:1.5px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+  }
+  .all-btn.active{
     background:var(--ink);
     border-color:var(--ink);
     color:#fff;
-  }
-  .tech-filter-btn.active .dot{
-    box-shadow:0 0 0 2px rgba(255,255,255,0.5);
+    box-shadow:none;
   }
   .spacer{ flex:1; }
   .add-btn{
@@ -448,11 +450,9 @@ function renderWeekLabel(){
 
 function renderTechFilter(){
   const wrap = document.getElementById('techFilter');
-  const allBtn = `<button class="tech-filter-btn ${state.filterTech==='all'?'active':''}" data-id="all">All</button>`;
+  const allBtn = `<button class="tech-filter-btn all-btn ${state.filterTech==='all'?'active':''}" data-id="all">All</button>`;
   const techBtns = state.technicians.map(t=>`
-    <button class="tech-filter-btn ${state.filterTech===t.id?'active':''}" data-id="${t.id}">
-      <span class="dot" style="background:${t.color}"></span>${t.name}
-    </button>`).join('');
+    <button class="tech-filter-btn ${state.filterTech===t.id?'active':''}" data-id="${t.id}" style="background-color:${t.color};">${t.name}</button>`).join('');
   wrap.innerHTML = allBtn + techBtns;
   wrap.querySelectorAll('.tech-filter-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
