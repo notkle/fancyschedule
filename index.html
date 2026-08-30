@@ -119,9 +119,11 @@
     display:flex;
     align-items:center;
     gap:6px;
+    transition:box-shadow 0.15s ease, transform 0.15s ease;
   }
   .tech-filter-btn.active{
-    box-shadow:0 0 0 2px var(--ink);
+    box-shadow:0 6px 16px rgba(43,35,32,0.3), 0 1px 3px rgba(43,35,32,0.2);
+    transform:translateY(-2px);
   }
   .all-btn{
     border:1.5px solid var(--line);
@@ -132,7 +134,6 @@
     background:var(--ink);
     border-color:var(--ink);
     color:#fff;
-    box-shadow:none;
   }
   .spacer{ flex:1; }
   .add-btn{
