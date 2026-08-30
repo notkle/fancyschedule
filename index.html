@@ -244,14 +244,16 @@
   }
   .appt-block b{ display:block; font-size:11px; font-weight:700;}
   .appt-name-wrap{ overflow:hidden; white-space:nowrap; }
-  .appt-name{ display:inline-block; white-space:nowrap; will-change:transform; }
-  .appt-name-wrap.marquee .appt-name{
-    animation:marquee-pingpong 4.5s ease-in-out infinite;
+  .appt-name-track{ display:inline-flex; white-space:nowrap; will-change:transform; }
+  .appt-name-track .appt-name.dup{ margin-left:20px; }
+  .appt-name-track.marquee{
+    animation-name:marquee-loop;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
   }
-  @keyframes marquee-pingpong{
-    0%, 12%{ transform:translateX(0); }
-    50%, 62%{ transform:translateX(var(--scroll-dist, 0px)); }
-    100%{ transform:translateX(0); }
+  @keyframes marquee-loop{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
   }
   .free-block{
     position:absolute;
@@ -527,8 +529,8 @@ function renderDays(){
         const lastName = nameParts.slice(1).join(' ');
         blocksHtml += `<div class="appt-block" style="top:${top}%;height:${h}%;background:${tech.color};" data-appt="${a.id}">
             <b>${initials(tech.name)}</b>
-            <div class="appt-name-wrap"><span class="appt-name">${firstName}</span></div>
-            ${lastName ? `<div class="appt-name-wrap"><span class="appt-name">${lastName}</span></div>` : ''}
+            <div class="appt-name-wrap"><span class="appt-name-track"><span class="appt-name">${firstName}</span></span></div>
+            ${lastName ? `<div class="appt-name-wrap"><span class="appt-name-track"><span class="appt-name">${lastName}</span></span></div>` : ''}
           </div>`;
       });
       laneHtml += `<div class="lane" data-tech="${tech.id}" data-date="${dISO}">${blocksHtml}</div>`;
@@ -569,11 +571,18 @@ function renderDays(){
 
 function applyMarquee(){
   document.querySelectorAll('.appt-name-wrap').forEach(wrap=>{
-    const nameEl = wrap.querySelector('.appt-name');
+    const track = wrap.querySelector('.appt-name-track');
+    const nameEl = track.querySelector('.appt-name');
     const overflowAmt = nameEl.scrollWidth - wrap.clientWidth;
     if(overflowAmt > 2){
-      wrap.classList.add('marquee');
-      nameEl.style.setProperty('--scroll-dist', (-overflowAmt - 4) + 'px');
+      const dup = nameEl.cloneNode(true);
+      dup.classList.add('dup');
+      track.appendChild(dup);
+      const stepDist = nameEl.getBoundingClientRect().width + 20; // matches .dup margin-left
+      const speedPxPerSec = 32;
+      const duration = Math.max(stepDist / speedPxPerSec, 2.5);
+      track.style.animationDuration = duration + 's';
+      track.classList.add('marquee');
     }
   });
 }
