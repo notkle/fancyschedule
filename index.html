@@ -253,7 +253,7 @@
   }
   @keyframes marquee-loop{
     from{ transform:translateX(0); }
-    to{ transform:translateX(-50%); }
+    to{ transform:translateX(var(--marquee-dist, 0px)); }
   }
   .free-block{
     position:absolute;
@@ -582,6 +582,7 @@ function applyMarquee(){
       const speedPxPerSec = 32;
       const duration = Math.max(stepDist / speedPxPerSec, 2.5);
       track.style.animationDuration = duration + 's';
+      track.style.setProperty('--marquee-dist', (-stepDist) + 'px');
       track.classList.add('marquee');
     }
   });
@@ -831,6 +832,12 @@ document.getElementById('prevWeek').onclick = ()=>{ state.weekStart = addDays(st
 document.getElementById('nextWeek').onclick = ()=>{ state.weekStart = addDays(state.weekStart,7); renderAll(); };
 document.getElementById('todayBtn').onclick = ()=>{ state.weekStart = startOfDay(new Date()); renderAll(); };
 renderAll();
+
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderDays, 150);
+});
 </script>
 </body>
 </html>
