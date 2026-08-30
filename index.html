@@ -522,9 +522,13 @@ function renderDays(){
       dayAppts.forEach(a=>{
         const top = (a.start - DAY_START_HOUR*60)/TOTAL_MIN*100;
         const h = a.duration/TOTAL_MIN*100;
+        const nameParts = a.clientName.trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ');
         blocksHtml += `<div class="appt-block" style="top:${top}%;height:${h}%;background:${tech.color};" data-appt="${a.id}">
             <b>${initials(tech.name)}</b>
-            <div class="appt-name-wrap"><span class="appt-name">${a.clientName}</span></div>
+            <div class="appt-name-wrap"><span class="appt-name">${firstName}</span></div>
+            ${lastName ? `<div class="appt-name-wrap"><span class="appt-name">${lastName}</span></div>` : ''}
           </div>`;
       });
       laneHtml += `<div class="lane" data-tech="${tech.id}" data-date="${dISO}">${blocksHtml}</div>`;
