@@ -87,12 +87,11 @@
   .week-row{
     display:flex;
     align-items:center;
-    justify-content:space-between;
     gap:8px;
     margin-bottom:12px;
   }
   .week-nav{ display:flex; align-items:center; gap:8px; }
-  .week-label{ font-size:14px; color:var(--muted); min-width:150px; text-align:center; }
+  .week-label{ font-size:14px; color:var(--muted); flex:1; text-align:center; }
   .controls-row{
     display:flex;
     flex-wrap:wrap;
@@ -141,6 +140,7 @@
     align-items:center;
     justify-content:center;
     box-shadow:0 2px 6px rgba(166,49,75,0.3);
+    margin-left:auto;
   }
   .add-btn:active{ transform:scale(0.95); }
 
@@ -347,11 +347,11 @@
         <button class="icon-btn" id="nextWeek">›</button>
       </div>
       <div class="week-label" id="weekLabel"></div>
-      <button class="add-btn" id="addBtn">+</button>
     </div>
 
     <div class="controls-row">
       <div class="tech-filter-row" id="techFilter"></div>
+      <button class="add-btn" id="addBtn">+</button>
     </div>
   </div>
 
@@ -383,9 +383,9 @@ function fmtMonthShort(d){ return d.toLocaleDateString(undefined,{month:'short'}
 const state = {
   weekStart: startOfDay(new Date()),
   technicians: [
-    {id:uid(), name:'Tammy', color:PALETTE[0]},
-    {id:uid(), name:'Rosa', color:PALETTE[1]},
-    {id:uid(), name:'Kim', color:PALETTE[2]},
+    {id:uid(), name:'Tracy', color:PALETTE[0]},
+    {id:uid(), name:'Tyler', color:PALETTE[1]},
+    {id:uid(), name:'Chau', color:PALETTE[2]},
   ],
   appointments: [],
   filterTech: 'all',
@@ -421,7 +421,9 @@ const DAY_BODY_BG = `repeating-linear-gradient(to bottom, transparent, transpare
 
 /* ===================== Rendering ===================== */
 function initials(name){
-  return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const s = name.trim();
+  if(!s) return '';
+  return s[0].toUpperCase() + (s[1]||'').toLowerCase();
 }
 function techById(id){ return state.technicians.find(t=>t.id===id); }
 
