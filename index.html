@@ -503,6 +503,7 @@ function overlaps(apptStart, apptDur, hour){
 function renderDays(){
   const inner = document.getElementById('daysInner');
   const activeTechs = state.filterTech==='all' ? state.technicians : state.technicians.filter(t=>t.id===state.filterTech);
+  const showSplitName = state.filterTech === 'all';
   const today = isoDate(new Date());
 
   let html = '';
@@ -523,10 +524,12 @@ function renderDays(){
         const nameParts = a.clientName.trim().split(/\s+/);
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ');
+        const nameHtml = showSplitName
+          ? `<div class="appt-name">${firstName}</div>${lastName ? `<div class="appt-name">${lastName}</div>` : ''}`
+          : `<div class="appt-name">${a.clientName}</div>`;
         blocksHtml += `<div class="appt-block" style="top:${top}%;height:${h}%;background:${tech.color};" data-appt="${a.id}">
             <b>${initials(tech.name)}</b>
-            <div class="appt-name">${firstName}</div>
-            ${lastName ? `<div class="appt-name">${lastName}</div>` : ''}
+            ${nameHtml}
           </div>`;
       });
       laneHtml += `<div class="lane" data-tech="${tech.id}" data-date="${dISO}">${blocksHtml}</div>`;
